@@ -1,5 +1,7 @@
-package com.fasttravel.backend.security;
+package com.fasttravel.backend.config;
 
+import com.fasttravel.backend.security.JwtAuthEntryPoint;
+import com.fasttravel.backend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -42,7 +44,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        HttpSecurity httpSecurity = http
+        http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -51,11 +53,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**", "/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/trips/search/**", "/api/v1/trips/search/**").permitAll()
                         .requestMatchers("/api/stations/**", "/api/v1/stations/**").permitAll()
+                        .requestMatchers("/api/v1/payment/**").permitAll()
                         .requestMatchers("/api/merchant/**", "/api/v1/merchant/**").hasAuthority("MERCHANT")
                         .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 );
-
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
