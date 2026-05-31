@@ -11,25 +11,29 @@ import java.util.UUID;
 @Repository
 public interface TripRepository extends JpaRepository<Trip, UUID> {
 
-    // 1. Kiểm tra xe bị trùng lịch
-    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Trip t " +
+    // 1. Logic kiểm tra trùng lịch XE
+    @Query("SELECT COUNT(t) > 0 FROM Trip t " +
             "WHERE t.vehicle.vehicleId = :vehicleId " +
+            "AND t.tripId <> :excludeTripId " +
             "AND t.status IN ('SCHEDULED', 'RUNNING') " +
-            "AND t.departureTime < :newArrivalTime " + // Bắt đầu cũ < Kết thúc mới
-            "AND t.arrivalTime > :newDepartureTime")   // Kết thúc cũ > Bắt đầu mới
-    boolean existsOverlappingVehicle(
-            @Param("vehicleId") UUID vehicleId,
-            @Param("newDepartureTime") LocalDateTime newDepartureTime,
-            @Param("newArrivalTime") LocalDateTime newArrivalTime);
+            "AND t.departureTime < :newArrival " +
+            "AND t.arrivalTime > :newDeparture")
+    boolean isVehicleOverlapping(
+            @org.springframework.data.repository.query.Param("vehicleId") java.util.UUID vehicleId,
+            @org.springframework.data.repository.query.Param("excludeTripId") java.util.UUID excludeTripId,
+            @org.springframework.data.repository.query.Param("newDeparture") java.time.LocalDateTime newDeparture,
+            @org.springframework.data.repository.query.Param("newArrival") java.time.LocalDateTime newArrival);
 
-    // 2. Kiểm tra tài xế bị trùng lịch
-    @Query("SELECT CASE WHEN COUNT(t) > 0 THEN true ELSE false END FROM Trip t " +
+    // 2. Logic kiểm tra trùng lịch TÀI XẾ
+    @Query("SELECT COUNT(t) > 0 FROM Trip t " +
             "WHERE t.driver.driverId = :driverId " +
+            "AND t.tripId <> :excludeTripId " +
             "AND t.status IN ('SCHEDULED', 'RUNNING') " +
-            "AND t.departureTime < :newArrivalTime " +
-            "AND t.arrivalTime > :newDepartureTime")
-    boolean existsOverlappingDriver(
-            @Param("driverId") UUID driverId,
-            @Param("newDepartureTime") LocalDateTime newDepartureTime,
-            @Param("newArrivalTime") LocalDateTime newArrivalTime);
+            "AND t.departureTime < :newArrival " +
+            "AND t.arrivalTime > :newDeparture")
+    boolean isDriverOverlapping(
+            @org.springframework.data.repository.query.Param("driverId") java.util.UUID driverId,
+            @org.springframework.data.repository.query.Param("excludeTripId") java.util.UUID excludeTripId,
+            @org.springframework.data.repository.query.Param("newDeparture") java.time.LocalDateTime newDeparture,
+            @org.springframework.data.repository.query.Param("newArrival") java.time.LocalDateTime newArrival);
 }
