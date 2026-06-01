@@ -25,7 +25,7 @@ public class TripService {
 
     @Transactional
     public Trip assignVehicleAndDriver(UUID tripId, UUID vehicleId, UUID driverId) {
-        // 1. Tìm thông tin chuyến đi cần điều phối
+        // 1. Tìm chuyến đi
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy chuyến đi!"));
 
@@ -33,34 +33,32 @@ public class TripService {
         LocalDateTime endTime = trip.getArrivalTime();
 
         if (startTime == null || endTime == null) {
-            throw new RuntimeException("Chuyến đi này chưa được cấu hình thời gian đi và đến hợp lệ!");
+            throw new RuntimeException("Chuyến đi chưa có thời gian hợp lệ!");
         }
 
-        // 2. Ràng buộc: Kiểm tra lịch của Xe (Nếu request có truyền ID xe)
+        // 2. Gán Xe
         if (vehicleId != null) {
-            boolean isVehicleBusy = tripRepository.isVehicleOverlapping(vehicleId, tripId, startTime, endTime);
-            if (isVehicleBusy) {
-                throw new RuntimeException("Lỗi: Xe này đang bận chạy chuyến khác trong khoảng thời gian từ "
-                        + startTime + " đến " + endTime);
+            if (tripRepository.isVehicleOverlapping(vehicleId, tripId, startTime, endTime)) {
+                throw new RuntimeException("Xe này đang bận trong khoảng thời gian này.");
             }
             Vehicle vehicle = vehicleRepository.findById(vehicleId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy dữ liệu xe!"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy xe!"));
             trip.setVehicle(vehicle);
         }
 
-        // 3. Ràng buộc: Kiểm tra lịch của Tài xế (Nếu request có truyền ID tài xế)
+        // 3. Gán Tài xế
         if (driverId != null) {
-            boolean isDriverBusy = tripRepository.isDriverOverlapping(driverId, tripId, startTime, endTime);
-            if (isDriverBusy) {
-                throw new RuntimeException("Lỗi: Tài xế này đã có lịch lái trong khoảng thời gian từ "
-                        + startTime + " đến " + endTime);
+            if (tripRepository.isDriverOverlapping(driverId, tripId, startTime, endTime)) {
+                throw new RuntimeException("Tài xế này đã có lịch trong khoảng thời gian này.");
             }
             Driver driver = driverRepository.findById(driverId)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy dữ liệu tài xế!"));
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy tài xế!"));
+
+            // Gán đối tượng driver vào trip
             trip.setDriver(driver);
         }
 
-        // 4. Lưu lại dữ liệu sau khi gán thành công
+        // 4. Lưu một lần duy nhất ở cuối
         return tripRepository.save(trip);
     }
 }

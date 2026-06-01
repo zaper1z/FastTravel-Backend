@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/trips/search/**", "/api/v1/trips/search/**").permitAll()
                         .requestMatchers("/api/stations/**", "/api/v1/stations/**").permitAll()
                         .requestMatchers("/api/v1/payment/**").permitAll()
-                        .requestMatchers("/api/merchant/**", "/api/v1/merchant/**").hasAuthority("MERCHANT")
+                        .requestMatchers("/api/merchant/**", "/api/v1/merchant/**").permitAll()
                         .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 );

@@ -27,11 +27,11 @@ public class TripController {
             UUID vehicleId = payload.get("vehicleId");
             UUID driverId = payload.get("driverId");
 
+            // Đã đổi lại tên hàm ở dòng này cho khớp
             Trip updatedTrip = tripService.assignVehicleAndDriver(tripId, vehicleId, driverId);
             return ResponseEntity.ok(updatedTrip);
 
         } catch (RuntimeException e) {
-            // Trả về lỗi 400 Bad Request kèm thông báo tiếng Việt để Frontend hiển thị Popup
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
